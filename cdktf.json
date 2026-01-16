@@ -1,0 +1,9 @@
+{
+  "language": "typescript",
+  "app": "pnpx ts-node --swc -P ./tsconfig.json main.ts",
+  "projectId": "200524ec-b17f-4b32-a78e-add4757a32f6",
+  "sendCrashReports": "false",
+  "terraformProviders": [],
+  "terraformModules": [],
+  "context": {}
+}
