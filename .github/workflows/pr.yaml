@@ -1,0 +1,84 @@
+name: Run Integration Tests
+
+on:
+  push:
+    paths-ignore:
+      - "README.md"
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-it-test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+          terraform_wrapper: false
+
+      - name: Setup pnpm from .packageManager
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+            node-version-file: .nvmrc
+            cache: 'pnpm'
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.3
+        with:
+          image-tag: '4.11.1'
+          install-awslocal: 'true'
+          skip-startup: 'true'
+          skip-wait: 'true'
+
+      - name: Start LocalStack
+        run: |
+          # Start LocalStack in the background
+          pnpm localstack:start
+          # Wait 30 seconds for the LocalStack container to become ready before timing out
+          echo "Waiting for LocalStack startup..."
+          localstack wait -t 30
+          echo "Startup complete"
+
+      - name: Install website dependencies
+        run: pnpm --prefix website ci
+
+      ## TODO: Set up CDKTF cli
+
+      ## TODO: Deploy Backend with CDKTF
+
+      ## TODO: Deploy Frontend with CDKTF
+
+      - name: Run Integration Tests
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        run: pnpm test:integ
+
+      - name: Show localstack logs
+        if: always()
+        run: |
+          localstack logs
+
+      - name: Generate a Diagnostic Report
+        if: failure()
+        run: |
+          curl -s localhost:4566/_localstack/diagnose | gzip -cf > diagnose.json.gz
+
+      - name: Upload the Diagnostic Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnose.json.gz
+          path: ./diagnose.json.gz

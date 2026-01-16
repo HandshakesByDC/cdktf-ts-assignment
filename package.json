@@ -1,0 +1,46 @@
+{
+  "name": "cdktf-ts-assignment",
+  "version": "1.0.0",
+  "main": "main.js",
+  "types": "main.ts",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "get": "cdktf get",
+    "build": "tsc",
+    "synth": "cdktf synth",
+    "compile": "tsc --pretty",
+    "test": "vitest run --passWithNoTests --coverage",
+    "test:unit": "vitest run --passWithNoTests --coverage --exclude '**/integ/**'",
+    "test:integ": "vitest run integ/integration.test.ts",
+    "localstack:start": "DEBUG=1 EXTRA_CORS_ALLOWED_ORIGINS=* localstack start -d",
+    "outputs:frontend": "TERRAFORM_BINARY_NAME=tflocal pnpm exec cdktf outputs --skip-synth iac-assignment-frontend",
+    "outputs:backend": "TERRAFORM_BINARY_NAME=tflocal pnpm exec cdktf outputs --skip-synth iac-assignment-backend",
+    "website:deploy": "pnpm --prefix website install && pnpm --prefix website run deploy && pnpm run outputs:frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "engines": {
+    "node": ">=20.0"
+  },
+  "packageManager": "pnpm@10.18.0",
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.750.0",
+    "@aws-sdk/client-s3": "^3.750.0",
+    "@aws-sdk/client-ssm": "^3.750.0",
+    "@swc/core": "^1.10.12",
+    "@types/node": "^20.17.16",
+    "@vitest/coverage-v8": "^2.1.8",
+    "cdktf-cli": "^0.21.0",
+    "cdktf-vitest": "^0.1.2",
+    "typescript": "^5.9.3",
+    "unplugin-swc": "^1.5.1",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@cdktn/provider-aws": "^21.23.0",
+    "@cdktn/provider-local": "^11.2.0",
+    "cdktf": "^0.21.0",
+    "constructs": "^10.4.4"
+  }
+}
